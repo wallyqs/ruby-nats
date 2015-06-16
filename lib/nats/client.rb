@@ -467,7 +467,7 @@ module NATS
   end
 
   def connect_command #:nodoc:
-    cs = { :verbose => @options[:verbose], :pedantic => @options[:pedantic] }
+    cs = { :verbose => @options[:verbose], :pedantic => @options[:pedantic], :lang=> "ruby-#{RUBY_VERSION}",:version => NATS::VERSION }
     if auth_connection?
       cs[:user] = @uri.user
       cs[:pass] = @uri.password
