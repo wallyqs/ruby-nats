@@ -108,6 +108,7 @@ module NATS
       opts[:debug] = ENV['NATS_DEBUG'].downcase == 'true' unless ENV['NATS_DEBUG'].nil?
       opts[:reconnect] = ENV['NATS_RECONNECT'].downcase == 'true' unless ENV['NATS_RECONNECT'].nil?
       opts[:fast_producer_error] = ENV['NATS_FAST_PRODUCER'].downcase == 'true' unless ENV['NATS_FAST_PRODUCER'].nil?
+      opts[:next_tick_flusher] = ENV['NATS_NEXT_TICK_FLUSHER'].downcase == 'true' unless ENV['NATS_NEXT_TICK_FLUSHER'].nil?
       opts[:ssl] = ENV['NATS_SSL'].downcase == 'true' unless ENV['NATS_SSL'].nil?
       opts[:max_reconnect_attempts] = ENV['NATS_MAX_RECONNECT_ATTEMPTS'].to_i unless ENV['NATS_MAX_RECONNECT_ATTEMPTS'].nil?
       opts[:reconnect_time_wait] = ENV['NATS_RECONNECT_TIME_WAIT'].to_i unless ENV['NATS_RECONNECT_TIME_WAIT'].nil?
@@ -241,7 +242,7 @@ module NATS
     end
 
     # Set the default on_closed callback.
-    # @param [Block] &callback called when will reach a state when will no longer be connected. 
+    # @param [Block] &callback called when will reach a state when will no longer be connected.
     def on_close(&callback)
       @close_cb = callback
       @client.on_close(&callback) unless @client.nil?
@@ -705,7 +706,7 @@ module NATS
     # Mark that we established already TCP connection to the server. In case of TLS,
     # prepare commands which will be dispatched to server and delay flushing until
     # we have processed the INFO line sent by the server and done the handshake.
-    @connected = true 
+    @connected = true
     process_connect
   end
 
@@ -714,7 +715,7 @@ module NATS
     process_connect
   end
 
-  def process_connect #:nodoc:   
+  def process_connect #:nodoc:
     # Reset reconnect attempts since TCP connection has been successful at this point.
     current = server_pool.first
     current[:was_connected] = true
@@ -868,7 +869,16 @@ module NATS
   end
 
   def send_command(command, priority = false) #:nodoc:
-    needs_flush = (connected? && @pending.nil?)
+    if @options[:next_tick_flusher]
+      EM.next_tick { add_pending_command(command, priority) }
+      return true
+    end
+
+    add_pending_command(command, priority)
+  end
+
+  def add_pending_command(command, priority)
+    needs_flush = connected? && @pending.nil?
 
     @pending ||= []
     @pending << command unless priority
@@ -877,13 +887,13 @@ module NATS
 
     EM.next_tick { flush_pending } if needs_flush
 
-    flush_pending if (connected? && @pending_size > MAX_PENDING_SIZE)
+    flush_pending if connected? && @pending_size > MAX_PENDING_SIZE
     if (@options[:fast_producer_error] && pending_data_size > FAST_PRODUCER_THRESHOLD)
       err_cb.call(NATS::ClientError.new("Fast Producer: #{pending_data_size} bytes outstanding"))
     end
     true
   end
-
+ 
   # Parse out URIs which can now be an array of server choices
   # The server pool will contain both explicit and implicit members.
   def process_uri_options #:nodoc
