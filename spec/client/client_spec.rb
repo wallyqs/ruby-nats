@@ -386,8 +386,8 @@ describe 'Client - specification' do
         end
 
         # Expect INFO followed by PONG response
-        conn.should_receive(:receive_data).at_least(:twice).and_call_original
-        conn.should_receive(:send_data).once.with("PUB hello  5\r\nworld\r\n").and_call_original
+        expect(conn).to receive(:receive_data).at_least(:twice).and_call_original
+        expect(conn).to receive(:send_data).once.with("PUB hello  5\r\nworld\r\n").and_call_original
         conn.flush do
           # Once we connected already and received PONG back,
           # we should be able to publish here.

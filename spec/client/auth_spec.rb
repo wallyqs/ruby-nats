@@ -80,8 +80,8 @@ describe 'Client - authorization' do
     end
     expect(error_cb).to eql(1)
     expect(connect_cb).to eql(true)
-    NATS.client.should_not == nil
-    NATS.client.server_pool.size.should == 1
+    expect(NATS.client).to_not be(nil)
+    expect(NATS.client.server_pool.size).to eql(1)
     NATS.stop # clears err_cb
   end
 
