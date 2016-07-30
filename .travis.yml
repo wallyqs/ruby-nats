@@ -32,7 +32,8 @@ matrix:
       jdk: oraclejdk7
     - rvm: jruby-head
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: ./scripts/jruby_spec.sh
+      before_script: ./scripts/jruby_spec.sh
+      script: "bundle exec rake spec:client:jruby"
       jdk: openjdk7
   allow_failures:
     - rvm: jruby
