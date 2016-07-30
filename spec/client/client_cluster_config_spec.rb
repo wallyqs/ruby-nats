@@ -100,11 +100,15 @@ describe 'Client - cluster config' do
   end
 
   it 'should fail to connect if no servers available' do
-    expect do
-      NATS.start(:uri => ['nats://127.0.0.1:4223']) do
-        NATS.stop
+    errors = []
+    with_em_timeout do
+      NATS.on_error do |e|
+        errors << e
       end
-    end.to raise_error NATS::Error
+
+      NATS.start(:uri => ['nats://127.0.0.1:4223'])
+    end
+    expect(errors.first).to be_a(NATS::Error)
   end
 
   it 'should connect to another server if first is not available' do

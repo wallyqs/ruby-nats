@@ -24,6 +24,7 @@ matrix:
   include:
     - rvm: jruby
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+      script: "bundle exec rake spec:client:jruby"
   allow_failures:
     - rvm: jruby
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'

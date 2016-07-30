@@ -9,7 +9,7 @@ describe 'Client - cluster' do
       'user'     => 'derek',
       'password' => 'bella',
       'token'    => 'deadbeef',
-      'timeout'  => 1
+      'timeout'  => 5
     }
 
     s1_config_opts = {
@@ -50,7 +50,7 @@ describe 'Client - cluster' do
         authorization {
           user: '#{auth_options["user"]}'
           password: '#{auth_options["password"]}'
-          timeout: 1
+          timeout: #{auth_options["timeout"]}
         }
 
         cluster {
@@ -60,7 +60,7 @@ describe 'Client - cluster' do
           authorization {
             user: foo
             password: bar
-            timeout: 1
+            timeout: #{auth_options["timeout"]}
           }
 
           routes = [
@@ -102,11 +102,11 @@ describe 'Client - cluster' do
       c1 = NATS.connect(:uri => @s1.uri)
       c2 = NATS.connect(:uri => @s2.uri)
       c1.subscribe('foo') do |msg|
-        msg.should == data
+        expect(msg).to eql(data)
         received += 1
       end
       c2.subscribe('foo') do |msg|
-        msg.should == data
+        expect(msg).to eql(data)
         received += 1
       end
       wait_on_routes_connected([c1, c2]) do

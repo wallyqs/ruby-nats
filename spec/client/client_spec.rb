@@ -12,13 +12,20 @@ describe 'Client - specification' do
   end
 
   it "should complain if it can't connect to server when not running" do
-    expect do
-      NATS.start(:uri => 'nats://127.0.0.1:3222') { NATS.stop }
-    end.to raise_error(NATS::ConnectError)
+    errors = []
+    with_em_timeout do
+      NATS.on_error do |e|
+        errors << e
+      end
+
+      NATS.connect(:uri => 'nats://127.0.0.1:3222')
+    end
+    expect(errors.count).to eql(1)
+    expect(errors.first).to be_a(NATS::ConnectError)
   end
 
-  it 'should complain if NATS.start is called without EM running and no block was given' do
-    EM.reactor_running?.should be_falsey
+  it 'should complain if NATS.start is called without EM running and no block was given', :jruby_excluded do
+    expect(EM.reactor_running?).to eql(false)
     expect { NATS.start }.to raise_error(NATS::Error)
     NATS.connected?.should be_falsey
   end
@@ -240,7 +247,7 @@ describe 'Client - specification' do
     end.to raise_error(NATS::Error)
   end
 
-  it 'should not complain if NATS.start called without a block when EM is running already' do
+  it 'should not complain if NATS.start called without a block when EM is running already', :jruby_excluded do
     EM.run do
       expect do
         NATS.start
@@ -370,7 +377,7 @@ describe 'Client - specification' do
           EM.stop
         end
         conn = NATS.connect(:pedantic => true)
-        conn.should_receive(:send_data).once.with(pending_commands).and_call_original
+        expect(conn).to receive(:send_data).once.with(pending_commands).and_call_original
 
         5.times do
           conn.subscribe("hello") do |msg|
