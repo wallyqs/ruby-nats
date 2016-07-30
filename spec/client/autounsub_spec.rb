@@ -73,7 +73,7 @@ describe 'Client - max responses and auto-unsubscribe' do
     expect(received).to eql(WANT)
   end
 
-  it "should only receive N msgs using request mode with multiple helpers", :jruby_exclude do
+  it "should only receive N msgs using request mode with multiple helpers", :jruby_excluded do
     received = 0
     NATS.start do
       # Create 5 identical helpers
@@ -94,7 +94,7 @@ describe 'Client - max responses and auto-unsubscribe' do
       NATS.flush do
         EM.add_timer(0.1) do
           NATS.unsubscribe(sid)
-          NATS.client.subscription_count.should == 0
+          expect(NATS.client.subscription_count).to eql(0)
           NATS.stop
         end
       end
