@@ -26,6 +26,10 @@ matrix:
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
       script: "bundle exec rake spec:client:jruby"
       jdk: openjdk7
+    - rvm: jruby
+      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+      script: "bundle exec rake spec:client:jruby"
+      jdk: oraclejdk7
     - rvm: jruby-head
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
       script: "bundle exec rake spec:client:jruby"
