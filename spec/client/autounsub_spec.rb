@@ -84,7 +84,7 @@ describe 'Client - max responses and auto-unsubscribe' do
     expect(received).to eql(1)
   end
 
-  it "should not leak subscriptions on request that auto-unsubscribe properly with :max" do
+  it "should not leak subscriptions on request that auto-unsubscribe properly with :max", :jruby_excluded do
     received = 0
     NATS.start do
       sid = NATS.subscribe('help') { |msg, reply| NATS.publish(reply, 'I can help!') }
