@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Client - max responses and auto-unsubscribe' do
+describe 'Client - max responses and auto-unsubscribe', :jruby_excluded  do
 
   before(:each) do
     @s = NatsServerControl.new("nats://127.0.0.1:4222")
@@ -73,7 +73,7 @@ describe 'Client - max responses and auto-unsubscribe' do
     expect(received).to eql(WANT)
   end
 
-  it "should only receive N msgs using request mode with multiple helpers", :jruby_excluded do
+  it "should only receive N msgs using request mode with multiple helpers" do
     received = 0
     NATS.start do
       # Create 5 identical helpers
@@ -84,7 +84,7 @@ describe 'Client - max responses and auto-unsubscribe' do
     expect(received).to eql(1)
   end
 
-  it "should not leak subscriptions on request that auto-unsubscribe properly with :max", :jruby_excluded do
+  it "should not leak subscriptions on request that auto-unsubscribe properly with :max" do
     received = 0
     NATS.start do
       sid = NATS.subscribe('help') { |msg, reply| NATS.publish(reply, 'I can help!') }
