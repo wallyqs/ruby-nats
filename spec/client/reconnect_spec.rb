@@ -68,6 +68,6 @@ describe 'Client - reconnect specification' do
       }
     end
 
-    received.should be_truthy
+    expect(received).to eql(true)
   end
 end

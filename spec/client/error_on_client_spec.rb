@@ -10,7 +10,7 @@ describe 'Client - error on client' do
         NATS.on_error{|e|
           # We use a CONNECT request to match Unknown Protocol
           #e.to_s.should match(/\AUnknown Protocol: CONNECT\s+.*/i)
-          e.to_s.should match(/\AUnknown Protocol: CONNECT.+/i)
+          expect(e.to_s).to match(/\AUnknown Protocol: CONNECT.+/i)
 
           NATS.stop
           EchoServer.stop
@@ -30,7 +30,7 @@ describe 'Client - error on client' do
       closes = 0
 
       SilentServer.start {
-        EM.reactor_running?.should be_truthy
+        expect(EM.reactor_running?).to eql(true)
 
         NATS.on_error do |e|
           errors << e
@@ -48,7 +48,7 @@ describe 'Client - error on client' do
           :ping_interval => 1,
           :reconnect => false
         })
-        nc.should_receive(:queue_server_rt).exactly(2).times
+        expect(nc).to receive(:queue_server_rt).exactly(2).times
       }
 
       expect(nc.connected?).to be_falsey

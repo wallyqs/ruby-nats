@@ -108,9 +108,9 @@ describe 'Client - max responses and auto-unsubscribe' do
       rsid = NATS.request('help', 'help request', :max => 1) {}
       NATS.flush do
         EM.add_timer(0.1) do
-          NATS.client.subscription_count.should == 1
+          expect(NATS.client.subscription_count).to eql(1)
           NATS.unsubscribe(sid)
-          NATS.client.subscription_count.should == 0
+          expect(NATS.client.subscription_count).to eql(0)
           NATS.unsubscribe(rsid)
           NATS.stop
         end

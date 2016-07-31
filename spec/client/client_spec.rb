@@ -27,7 +27,7 @@ describe 'Client - specification' do
   it 'should complain if NATS.start is called without EM running and no block was given', :jruby_excluded do
     expect(EM.reactor_running?).to eql(false)
     expect { NATS.start }.to raise_error(NATS::Error)
-    NATS.connected?.should be_falsey
+    expect(NATS.connected?).to eql(false)
   end
 
   it 'should perform basic block start and stop' do
@@ -35,10 +35,10 @@ describe 'Client - specification' do
   end
 
   it 'should signal connected state' do
-    NATS.start {
-      NATS.connected?.should be_truthy
+    NATS.start do
+      expect(NATS.connected?).to eql(true)
       NATS.stop
-    }
+    end
   end
 
   it 'should have err_cb cleared after stop' do
@@ -46,7 +46,7 @@ describe 'Client - specification' do
       NATS.on_error { puts 'err' }
       NATS.stop
     end
-    NATS.err_cb.should be_nil
+    expect(NATS.err_cb).to eql(nil)
   end
 
   it 'should raise NATS::ServerError on error replies from NATS Server' do
@@ -78,97 +78,97 @@ describe 'Client - specification' do
   end
 
   it 'should receive a sid when doing a subscribe' do
-    NATS.start { |nc|
+    NATS.start do |nc|
       s = nc.subscribe('foo')
-      s.should_not be_nil
+      expect(s).to_not eql(nil)
       NATS.stop
-    }
+    end
   end
 
   it 'should receive a sid when doing a request' do
-    NATS.start { |nc|
+    NATS.start do |nc|
       s = nc.request('foo')
-      s.should_not be_nil
+      expect(s).to_not eql(nil)
       NATS.stop
-    }
+    end
   end
 
   it 'should receive a message that it has a subscription to' do
     received = false
-    NATS.start { |nc|
-      nc.subscribe('foo') { |msg|
+    NATS.start do |nc|
+      nc.subscribe('foo') do |msg|
         received = true
-        msg.should == 'xxx'
+        expect(msg).to eql('xxx')
         NATS.stop
-      }
+      end
       nc.publish('foo', 'xxx')
       timeout_nats_on_failure
-    }
-    received.should be_truthy
+    end
+    expect(received).to eql(true)
   end
 
   it 'should receive a message that it has a wildcard subscription to' do
     received = false
-    NATS.start { |nc|
-      nc.subscribe('*') { |msg|
+    NATS.start do |nc|
+      nc.subscribe('*') do |msg|
         received = true
-        msg.should == 'xxx'
+        expect(msg).to eql('xxx')
         NATS.stop
-      }
+      end
       nc.publish('foo', 'xxx')
       timeout_nats_on_failure
-    }
-    received.should be_truthy
+    end
+    expect(received).to eql(true)
   end
 
   it 'should not receive a message that it has unsubscribed from' do
     received = 0
-    NATS.start { |nc|
-      s = nc.subscribe('*') { |msg|
+    NATS.start do |nc|
+      s = nc.subscribe('*') do |msg|
         received += 1
-        msg.should == 'xxx'
+        expect(msg).to eql('xxx')
         nc.unsubscribe(s)
-      }
+      end
       nc.publish('foo', 'xxx')
       timeout_nats_on_failure
-    }
-    received.should == 1
+    end
+    expect(received).to eql(1)
   end
 
   it 'should receive a response from a request' do
     received = false
-    NATS.start { |nc|
-      nc.subscribe('need_help') { |msg, reply|
-        msg.should == 'yyy'
+    NATS.start do |nc|
+      nc.subscribe('need_help') do |msg, reply|
+        expect(msg).to eql('yyy')
         nc.publish(reply, 'help')
-      }
-      nc.request('need_help', 'yyy') { |response|
-        received=true
-        response.should == 'help'
+      end
+      nc.request('need_help', 'yyy') do |response|
+        received = true
+        expect(response).to eql('help')
         NATS.stop
-      }
+      end
       timeout_nats_on_failure
-    }
-    received.should be_truthy
+    end
+    expect(received).to eql(true)
   end
 
   it 'should perform similar using class mirror functions' do
     received = false
-    NATS.start {
-      s = NATS.subscribe('need_help') { |msg, reply|
-        msg.should == 'yyy'
+    NATS.start do
+      s = NATS.subscribe('need_help') do |msg, reply|
+        expect(msg).to eql('yyy')
         NATS.publish(reply, 'help')
         NATS.unsubscribe(s)
-      }
-      r = NATS.request('need_help', 'yyy') { |response|
+      end
+      r = NATS.request('need_help', 'yyy') do |response|
         received = true
-        response.should == 'help'
+        expect(response).to eql('help')
         NATS.unsubscribe(r)
         NATS.stop
-      }
+      end
       timeout_nats_on_failure
-    }
-    received.should be_truthy
+    end
+    expect(received).to eql(true)
   end
 
   it 'should return inside closure on publish when server received msg' do
@@ -180,7 +180,7 @@ describe 'Client - specification' do
       }
       timeout_nats_on_failure
     }
-    received_pub_closure.should be_truthy
+    expect(received_pub_closure).to eql(true)
   end
 
   it 'should return inside closure in ordered fashion when server received msg' do
@@ -198,8 +198,8 @@ describe 'Client - specification' do
       }
       timeout_nats_on_failure
     }
-    received_pub_closure.should be_truthy
-    replies.should == expected
+    expect(received_pub_closure).to eql(true)
+    expect(replies).to eql(expected)
   end
 
   it "should be able to start and use a new connection inside of start block" do
@@ -212,8 +212,8 @@ describe 'Client - specification' do
       end
       timeout_nats_on_failure(5)
     }
-    new_conn.should_not be_nil
-    received.should be_truthy
+    expect(new_conn).to_not eql(nil)
+    expect(received).to eql(true)
   end
 
   it 'should allow proper request/reply across multiple connections' do
@@ -235,9 +235,9 @@ describe 'Client - specification' do
       end
       timeout_nats_on_failure
     }
-    new_conn.should_not be_nil
-    received_request.should be_truthy
-    received_reply.should be_truthy
+    expect(new_conn).to_not eql(nil)
+    expect(received_request).to eql(true)
+    expect(received_reply).to eql(true)
   end
 
   it 'should complain if NATS.start called without a block when we would need to start EM' do
@@ -272,13 +272,13 @@ describe 'Client - specification' do
     NATS.start do
       sid = NATS.subscribe('foo') { |msg|
         received += 1
-        sid.should_not be_nil
+        expect(sid).to_not eql(true)
         NATS.unsubscribe(sid)
       }
       NATS.publish('foo')
       NATS.publish('foo') { NATS.stop }
     end
-    received.should == 1
+    expect(received).to eql(1)
   end
 
   it 'should not call error handler for double unsubscribe unless in pedantic mode' do
@@ -290,7 +290,7 @@ describe 'Client - specification' do
       NATS.unsubscribe(s)
       NATS.publish('flush') { NATS.stop }
     end
-    got_error.should be_falsey
+    expect(got_error).to eql(false)
   end
 
   it 'should call error handler for double unsubscribe if in pedantic mode' do
@@ -304,7 +304,7 @@ describe 'Client - specification' do
       NATS.unsubscribe(s)
       NATS.publish('flush') { NATS.stop }
     end
-    got_error.should be_truthy
+    expect(got_error).to eql(true)
   end
 
   it 'should monitor inbound and outbound messages and bytes' do
@@ -314,10 +314,10 @@ describe 'Client - specification' do
       NATS.publish('foo', msg)
       NATS.publish('bar', msg)
       NATS.flush do
-        c.msgs_sent.should == 2
-        c.msgs_received.should == 1
-        c.bytes_received.should == msg.size
-        c.bytes_sent.should == msg.size * 2
+        expect(c.msgs_sent).to eql(2)
+        expect(c.msgs_received).to eql(1)
+        expect(c.bytes_received).to eql(msg.size)
+        expect(c.bytes_sent).to eql(msg.size * 2)
         NATS.stop
       end
     end
@@ -325,9 +325,9 @@ describe 'Client - specification' do
 
   it 'should receive a pong from a server after ping_interval' do
     NATS.start(:ping_interval => 0.75) do
-      NATS.client.pongs_received.should == 0
+      expect(NATS.client.pongs_received).to eql(0)
       EM.add_timer(1) do
-        NATS.client.pongs_received.should == 1
+        expect(NATS.client.pongs_received).to eql(1)
         NATS.stop
       end
     end
@@ -342,7 +342,7 @@ describe 'Client - specification' do
         end
       end
       EM.add_timer(0.5) do
-        NATS.connected?.should be_falsey
+        expect(NATS.connected?).to eql(false)
         EM.stop
       end
     end
@@ -358,7 +358,7 @@ describe 'Client - specification' do
         end
       end
       EM.add_timer(0.5) do
-        $pings_received.should == 1
+        expect($pings_received).to eql(1)
         EM.stop
       end
     end
