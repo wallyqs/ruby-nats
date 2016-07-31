@@ -6,10 +6,9 @@ describe 'Client - error on client' do
 
     it 'should show the contents of $1 when matched UNKNOWN' do
       EchoServer.start {
-        EM.reactor_running?.should be_truthy
-        NATS.on_error{|e|
+        expect(EM.reactor_running?).to eql(true)
+        NATS.on_error{ |e|
           # We use a CONNECT request to match Unknown Protocol
-          #e.to_s.should match(/\AUnknown Protocol: CONNECT\s+.*/i)
           expect(e.to_s).to match(/\AUnknown Protocol: CONNECT.+/i)
 
           NATS.stop

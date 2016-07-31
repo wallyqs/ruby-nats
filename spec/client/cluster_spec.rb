@@ -177,7 +177,7 @@ describe 'Client - cluster' do
       end
     end
 
-    received.should == to_send*2 # queue subscriber + normal subscriber
+    expect(received).to eql(to_send*2) # queue subscriber + normal subscriber
     expect(c1_received < to_send).to eql(true) 
     expect(c2_received < to_send).to eql(true)
     expect(c1_received).to be_within(15).of(to_send/2)
@@ -228,7 +228,7 @@ describe 'Client - cluster' do
       end
     end
 
-    received.should == to_send*6 # 2 queue subscribers + normal subscriber * 2 pub loops
+    expect(received).to eql(to_send*6) # 2 queue subscribers + normal subscriber * 2 pub loops
     expect(c1a_received).to be_within(25).of(to_send)
     expect(c2a_received).to be_within(25).of(to_send)
     expect(c1b_received).to be_within(25).of(to_send)
@@ -259,7 +259,7 @@ describe 'Client - cluster' do
       end
     end
 
-    received.should == to_send
+    expect(received).to eql(to_send)
     expect(c1_received < to_send).to eql(true)
     expect(c2_received < to_send).to eql(true)
     expect(c1_received).to be_within(25).of(to_send/2)
