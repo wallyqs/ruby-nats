@@ -429,22 +429,28 @@ describe 'Client - specification' do
     NATS.start(opts) { NATS.stop }
     NATS.start(opts) { NATS.stop }
   end
+end
 
-  describe '#create_inbox', :inboxes do
-    it 'create the expected format' do
-      expect(NATS.create_inbox).to match(/_INBOX\.[a-f0-9]{12}/)
-    end
+describe '#create_inbox', :inboxes do
+  it 'create the expected format' do
+    expect(NATS.create_inbox).to match(/_INBOX\.[a-f0-9]{12}/)
+  end
 
-    context 'when Kernel.srand is regularly reset to the same value' do
-      it 'should generate a unique inbox name' do
-        Kernel.srand 5555
-        first_inbox_name = NATS.create_inbox
+  it 'calling multiple times should be different' do
+    a = NATS.create_inbox
+    b = NATS.create_inbox
+    expect(a).to_not eql(b)
+  end
 
-        Kernel.srand 5555
-        second_inbox_name = NATS.create_inbox
+  context 'when Kernel.srand is regularly reset to the same value' do
+    it 'should generate a unique inbox name' do
+      Kernel.srand 5555
+      first_inbox_name = NATS.create_inbox
 
-        expect(second_inbox_name).to_not eq(first_inbox_name)
-      end
+      Kernel.srand 5555
+      second_inbox_name = NATS.create_inbox
+
+      expect(second_inbox_name).to_not eq(first_inbox_name)
     end
   end
 end
