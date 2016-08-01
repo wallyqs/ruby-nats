@@ -22,6 +22,12 @@ RSpec::Core::RakeTask.new('spec:client:jruby') do |spec|
   spec.rspec_opts = ["--format", "documentation", "--colour", "--tag", "~jruby_excluded", "--profile"]
 end
 
+desc 'Run spec from client on jruby using gnatsd as the server'
+RSpec::Core::RakeTask.new('spec:client:jruby:inboxes') do |spec|
+  spec.pattern = FileList['spec/client/*_spec.rb']
+  spec.rspec_opts = ["--format", "documentation", "--colour", "--tag", "inboxes", "--profile"]
+end
+
 desc 'Run spec from server'
 RSpec::Core::RakeTask.new('spec:server') do |spec|
   spec.pattern = FileList['spec/server/*_spec.rb']
