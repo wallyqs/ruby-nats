@@ -10,6 +10,7 @@ require "#{ep}/version"
 
 module NATS
 
+  PROTOCOL_VERSION = 1
   DEFAULT_PORT = 4222
   DEFAULT_URI = "nats://localhost:#{DEFAULT_PORT}".freeze
 
@@ -241,7 +242,7 @@ module NATS
     end
 
     # Set the default on_closed callback.
-    # @param [Block] &callback called when will reach a state when will no longer be connected. 
+    # @param [Block] &callback called when will reach a state when will no longer be connected.
     def on_close(&callback)
       @close_cb = callback
       @client.on_close(&callback) unless @client.nil?
@@ -517,7 +518,8 @@ module NATS
       :verbose => @options[:verbose],
       :pedantic => @options[:pedantic],
       :lang => :ruby,
-      :version => VERSION
+      :version => VERSION,
+      :protocol => PROTOCOL_VERSION
     }
     if auth_connection?
       cs[:user] = @uri.user
@@ -654,6 +656,15 @@ module NATS
       # Otherwise, use a regular connection.
     end
 
+    # Detect any announced server that we might not be aware of...
+    connect_urls = @server_info[:connect_urls]
+    connect_urls.each do |url|
+      u = URI.parse("nats://#{url}")
+      present = server_pool.detect { |srv| srv[:uri] == u }
+      server_pool << { :uri => u, :reconnect_attempts => 0 } if not present
+      server_pool.shuffle! unless @options[:dont_randomize_servers]
+    end if connect_urls
+
     if @server_info[:auth_required]
       current = server_pool.first
       current[:auth_required] = true
@@ -705,7 +716,7 @@ module NATS
     # Mark that we established already TCP connection to the server. In case of TLS,
     # prepare commands which will be dispatched to server and delay flushing until
     # we have processed the INFO line sent by the server and done the handshake.
-    @connected = true 
+    @connected = true
     process_connect
   end
 
@@ -714,7 +725,7 @@ module NATS
     process_connect
   end
 
-  def process_connect #:nodoc:   
+  def process_connect #:nodoc:
     # Reset reconnect attempts since TCP connection has been successful at this point.
     current = server_pool.first
     current[:was_connected] = true
