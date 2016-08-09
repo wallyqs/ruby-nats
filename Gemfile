@@ -9,5 +9,5 @@ gem 'thin', '>= 1.6.0'
 
 group :test do
   gem 'rake'
-  gem 'rspec', '< 3.0.0'
+  gem 'rspec'
 end
