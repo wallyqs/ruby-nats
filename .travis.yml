@@ -1,10 +1,10 @@
 sudo: false
 
 rvm:
-  - 2.2
+  # - 2.2
   - 2.3.0
-  - 2.4.0-preview1
-  - ruby-head  
+  # - 2.4.0-preview1
+  # - ruby-head  
 
 cache:
   directories:
@@ -23,55 +23,60 @@ bundler_args: --without server
 matrix:
   include:
 
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby"
-      jdk: openjdk7
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   script: "bundle exec rake spec:client:jruby"
+    #   jdk: openjdk7
+
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   script: "bundle exec rake spec:client:jruby"
+    #   jdk: oraclejdk7
+
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   script: "bundle exec rake spec:client:jruby"
+    #   jdk: openjdk8
+
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   script: "bundle exec rake spec:client:jruby"
+    #   jdk: oraclejdk8
+
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'  JAVA_OPTS='-Djava.security.egd=file:///dev/urandom'
+    #   script: "bundle exec rake spec:client:jruby:inboxes"
+    #   jdk: openjdk7
+
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'  JAVA_OPTS='-Djava.security.egd=file:///dev/urandom'
+    #   script: "bundle exec rake spec:client:jruby:inboxes"
+    #   jdk: oraclejdk7
 
     - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby"
-      jdk: oraclejdk7
-
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby"
+      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false ' JAVA_OPTS='-Djava.security.egd=file:///dev/urandom'
+      script: "bundle exec rake spec:client:jruby:inboxes"
       jdk: openjdk8
 
     - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby"
+      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'  JAVA_OPTS='-Djava.security.egd=file:///dev/urandom'
+      script: "bundle exec rake spec:client:jruby:inboxes"
       jdk: oraclejdk8
 
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby:inboxes"
-      jdk: openjdk7
-
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby:inboxes"
-      jdk: oraclejdk7
-
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      script: "bundle exec rake spec:client:jruby:inboxes"
-      jdk: openjdk8
-
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    - rvm: jruby-head
+      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'  JAVA_OPTS='-Djava.security.egd=file:///dev/urandom'
       script: "bundle exec rake spec:client:jruby:inboxes"
       jdk: oraclejdk8
       
   allow_failures:
 
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      jdk: openjdk7
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   jdk: openjdk7
 
-    - rvm: jruby
-      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
-      jdk: oraclejdk7
+    # - rvm: jruby
+    #   env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+    #   jdk: oraclejdk7
 
     - rvm: jruby
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
@@ -81,6 +86,10 @@ matrix:
       env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
       jdk: oraclejdk8
 
-    - rvm: ruby-head
+    - rvm: jruby-head
+      env: JRUBY_OPTS='--server -Xcompile.invokedynamic=false'
+      jdk: oraclejdk8
 
-    - rvm: 2.4.0-preview1
+    # - rvm: ruby-head
+
+    # - rvm: 2.4.0-preview1
