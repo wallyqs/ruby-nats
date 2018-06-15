@@ -472,7 +472,7 @@ module NATS
     # In case of using async request then fallback to auto unsubscribe
     # based request/response and not break compatibility too much since
     # new request/response style can only be used with fibers.
-    if cb
+    if cb and opts[:old_style_request]
       inbox = "_INBOX.#{@nuid.next}"
       s = subscribe(inbox, opts) { |msg, reply|
         case cb.arity
@@ -492,6 +492,28 @@ module NATS
     # Generate unique token for the reply subject.
     token = @nuid.next
     inbox = "#{@resp_sub_prefix}.#{token}"
+    expected = opts[:max] ||= 1
+    timeout = opts[:timeout] ||= 0.5
+    @resp_map[token][:expected] = expected
+
+    # If using a callback with new style, then just register
+    # the callback and wait for the messages.
+    if cb
+      @resp_map[token][:expected] = expected
+      @resp_map[token][:cb] = cb
+      @resp_map[token][:received] = 0
+      @resp_map[token][:cancel_timer] = EM.add_timer(timeout) do
+        # FIXME: Async error in this case?
+        @resp_map.delete(token)
+      end
+
+      # Announce the request with the inbox using the token.
+      publish(subject, data, inbox)
+
+      # NOTE: No longer returning a sid here, so code which was
+      # depending on this would break...
+      return nil
+    end
 
     # Synchronous request/response requires using a Fiber
     # to be able to await the response.
@@ -500,15 +522,12 @@ module NATS
 
     # If awaiting more than a single response then use array
     # to include all that could be gathered before the deadline.
-    expected = opts[:max] ||= 1
-    @resp_map[token][:expected] = expected
     @resp_map[token][:msgs] = [] if expected > 1
 
     # Announce the request with the inbox using the token.
     publish(subject, data, inbox)
 
     # If deadline expires, then discard the token and resume fiber
-    opts[:timeout] ||= 0.5
     t = EM.add_timer(opts[:timeout]) do
       if expected > 1
         f.resume @resp_map[token][:msgs]
@@ -545,11 +564,32 @@ module NATS
 
       # Discard the response if requestor not interested already.
       next unless @resp_map.key? token
+      expected = @resp_map[token][:expected]
+
+      # Handle async requests using new request/response style.
+      if cb = @resp_map[token][:cb]
+        received = @resp_map[token][:received] += 1
+
+        # Enough replies so throw away related state from request
+        # and remove cancellation timer.
+        if received >= expected
+          t = @resp_map[token][:cancel_timer]
+          EM.cancel_timer(t)
+          @resp_map.delete(token)
+        end
+
+        case cb.arity
+        when 0 then cb.call
+        when 1 then cb.call(msg)
+        else cb.call(msg, reply)
+        end
+
+        # Done handling this message, wait for next one...
+        next
+      end
 
       # Take fiber that will be passed the response
       f = @resp_map[token][:fiber]
-      expected = @resp_map[token][:expected]
-
       if expected == 1
         f.resume msg
         @resp_map.delete(token)

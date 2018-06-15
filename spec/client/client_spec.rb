@@ -107,7 +107,7 @@ describe 'Client - specification' do
     expect(sid).to_not eql(nil)
   end
 
-  it 'should receive a sid when doing a request' do
+  it 'should receive a sid when doing a request when using old style requests' do
     sid = nil
     errors = []
     with_em_timeout do
@@ -115,7 +115,7 @@ describe 'Client - specification' do
         errors << e
       end
       NATS.start do |nc|
-        sid = nc.request('foo') { }
+        sid = nc.request('foo', nil, :old_style_request => true) { }
       end
     end
     expect(sid).to_not eql(nil)

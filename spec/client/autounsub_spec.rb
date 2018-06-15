@@ -89,7 +89,7 @@ describe 'Client - max responses and auto-unsubscribe' do
     NATS.start do
       sid = NATS.subscribe('help') { |msg, reply| NATS.publish(reply, 'I can help!') }
       (1..100).each do
-        NATS.request('help', 'help request', :max => 1) { received += 1 }
+        NATS.request('help', 'help request', :max => 1, :old_style_request => true) { received += 1 }
       end
       NATS.flush do
         EM.add_timer(0.1) do
@@ -105,7 +105,7 @@ describe 'Client - max responses and auto-unsubscribe' do
   it "should not complain when unsubscribe called on auto-cleaned up subscription" do
     NATS.start do
       sid = NATS.subscribe('help') { |msg, reply| NATS.publish(reply, 'I can help!') }
-      rsid = NATS.request('help', 'help request', :max => 1) {}
+      rsid = NATS.request('help', 'help request', :max => 1, :old_style_request => true) {}
       NATS.flush do
         EM.add_timer(0.1) do
           expect(NATS.client.subscription_count).to eql(1)
