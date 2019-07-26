@@ -5,6 +5,7 @@ gemspec
 group :test do
   gem 'rake'
   gem 'rspec'
+  gem 'nats-pure'
 end
 
 group :server do

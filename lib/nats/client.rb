@@ -1088,6 +1088,8 @@ module NATS
       end
     end
 
+    # NOTE: at this point we have only established a TCP connection.
+
     # Notify via reconnect callback that we are again plugged again into the system.
     if reconnecting?
       @reconnecting = false

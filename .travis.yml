@@ -17,3 +17,10 @@ before_script:
 sudo: required
 dist: xenial
 bundler_args: --without server
+
+addons:
+  hosts:
+    - server-A.clients.nats-service.localhost
+    - server-A.clients.fake-nats-service.localhost
+    - server-A.routes.nats-service.localhost
+    - server-A.routes.fake-nats-service.localhost
